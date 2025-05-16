@@ -13,6 +13,15 @@ def visualize_circles_in_ui(group, highlight_group, container, save_path=None):
     ax.set_aspect('equal')
     ax.set_title("Графічне представлення кіл")
 
+
+    # Якщо список кіл порожній — просто відобразимо порожній canvas
+    if not group.circles:
+        canvas = FigureCanvasTkAgg(fig, master=container)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill='both', expand=True)
+        return
+
+
     for circle in group.circles:
         if circle in highlight_group:
             color = "red"
