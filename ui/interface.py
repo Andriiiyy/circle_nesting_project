@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
-from time import time
+from time import perf_counter as timer
 
 from classes.file_io import load_circles_from_file
 from classes.circle_group import CircleGroup
@@ -81,7 +81,7 @@ def launch_interface():
         entry_file.insert(0, filename)
         circles = load_circles_from_file(filename)
         group = CircleGroup(circles)
-        group.build_nesting_tree()
+        # Немає виклику старого build_nesting_tree(), алгоритми самі побудують
         app_state["group"] = group
         app_state["highlight"] = []
         output_text.delete("1.0", tk.END)
@@ -97,7 +97,6 @@ def launch_interface():
         idx = len(app_state["group"].circles)
         c = Circle(idx, x, y, r)
         app_state["group"].circles.append(c)
-        app_state["group"].build_nesting_tree()
         output_text.insert(tk.END, f"Додано коло #{idx}: x={x}, y={y}, r={r}\n")
         visualize_circles_in_ui(app_state["group"], [], canvas_frame)
 
@@ -106,35 +105,34 @@ def launch_interface():
         idx = len(app_state["group"].circles)
         c = Circle(idx, x, y, r)
         app_state["group"].circles.append(c)
-        app_state["group"].build_nesting_tree()
         output_text.insert(tk.END, f"Згенеровано коло #{idx}: x={x}, y={y}, r={r}\n")
         visualize_circles_in_ui(app_state["group"], [], canvas_frame)
 
     def run_algorithm1():
         output_text.delete("1.0", tk.END)
-        start = time()
-        area, group = app_state["group"].find_largest_nested_group()
-        elapsed = time() - start
+        start = timer()
+        area, group = app_state["group"].find_largest_nested_group_dfs()
+        elapsed = timer() - start
         app_state["highlight"] = group
         output_text.insert(tk.END,
             f"Алгоритм 1 (DFS)\n"
             f"Сумарна площа: {area:.2f}\n"
             f"Кількість кіл: {len(group)}\n"
-            f"Час: {elapsed:.8f} с\n"
+            f"Час: {elapsed:.6f} с\n"
         )
         visualize_circles_in_ui(app_state["group"], group, canvas_frame)
 
     def run_algorithm2():
         output_text.delete("1.0", tk.END)
-        start = time()
-        area, group = app_state["group"].find_largest_nested_group_dp()
-        elapsed = time() - start
+        start = timer()
+        area, group = app_state["group"].find_largest_nested_group_kd()
+        elapsed = timer() - start
         app_state["highlight"] = group
         output_text.insert(tk.END,
-            f"Алгоритм 2 (DP)\n"
+            f"Алгоритм 2 (KD-дерево)\n"
             f"Сумарна площа: {area:.2f}\n"
             f"Кількість кіл: {len(group)}\n"
-            f"Час: {elapsed:.8f} с\n"
+            f"Час: {elapsed:.6f} с\n"
         )
         visualize_circles_in_ui(app_state["group"], group, canvas_frame)
 
@@ -149,7 +147,6 @@ def launch_interface():
             messagebox.showinfo("Успіх", f"Зображення збережено: {path}")
 
     def clear_all():
-        # Очищуємо список кіл і підсвічування
         app_state["group"] = CircleGroup([])
         app_state["highlight"] = []
         output_text.delete("1.0", tk.END)
@@ -159,7 +156,7 @@ def launch_interface():
     bottom_frame = ttk.Frame(root, padding=10)
     bottom_frame.pack(side=tk.BOTTOM, fill=tk.X)
     ttk.Button(bottom_frame, text="Алгоритм 1 (DFS)", command=run_algorithm1).pack(side=tk.LEFT, padx=10)
-    ttk.Button(bottom_frame, text="Алгоритм 2 (DP)",   command=run_algorithm2).pack(side=tk.LEFT, padx=10)
+    ttk.Button(bottom_frame, text="Алгоритм 2 (KD-дерево)", command=run_algorithm2).pack(side=tk.LEFT, padx=10)
     ttk.Button(bottom_frame, text="Зберегти зображення", command=save_image).pack(side=tk.RIGHT, padx=10)
     ttk.Button(bottom_frame, text="Очистити", command=clear_all).pack(side=tk.RIGHT, padx=10)
 
