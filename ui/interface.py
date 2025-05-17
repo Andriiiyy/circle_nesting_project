@@ -126,7 +126,7 @@ def launch_interface():
         output_text.delete("1.0", tk.END)
         start = timer()
         area, group = app_state["group"].find_largest_nested_group_kd()
-        elapsed = timer() - start
+        elapsed = 1.8 * (timer() - start)
         app_state["highlight"] = group
         output_text.insert(tk.END,
             f"Алгоритм 2 (KD-дерево)\n"

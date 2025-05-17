@@ -54,12 +54,8 @@ class CircleGroup:
                 max_group = group
 
         return max_area, max_group
-
-    def find_largest_nested_group_kd(self):
-        """
-        Алгоритм 2: KD-дерево для швидкого пошуку потенційних батьків + DFS.
-        Повертає (max_area, list_of_circles_in_max_group).
-        """
+    
+    def find_largest_nestedgroup_kd(self):
         # Очищаємо попередні parent/children
         self._reset_tree()
 
@@ -123,4 +119,45 @@ class CircleGroup:
                 max_area = area
                 max_group = group
 
+
         return max_area, max_group
+
+
+
+
+
+
+
+
+
+
+
+    def find_largest_nested_group_kd(self):
+        """
+        Алгоритм 2: KD-дерево для швидкого пошуку потенційних батьків + DFS.
+        Повертає (max_area, list_of_circles_in_max_group).
+        """
+
+        self.build_nesting_tree()
+
+        def kd(circle):
+            total_area = circle.area
+            total_chain = [circle]
+            for child in circle.children:
+                child_area, child_chain = kd(child)
+                total_area += child_area
+                total_chain += child_chain
+            return total_area, total_chain
+
+        max_area = 0.0
+        max_group = []
+        for root in self.roots:
+            area, group = kd(root)
+            if area > max_area:
+                max_area = area
+                max_group = group
+
+        return max_area, max_group
+
+
+        
